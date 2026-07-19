@@ -18,3 +18,18 @@ export async function siteUrl() {
 
   return `${proto}://${host}`;
 }
+
+/**
+ * Igual que `siteUrl()` pero sin leer headers, para `metadataBase`, que se
+ * evalúa fuera del request. Sin esto, Next arma las URLs de las imágenes OG
+ * contra `localhost` y WhatsApp no puede descargarlas.
+ */
+export function staticSiteUrl() {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+  if (fromEnv) return new URL(fromEnv.replace(/\/$/, ""));
+
+  // Vercel la inyecta sola en cada deploy (preview incluido).
+  if (process.env.VERCEL_URL) return new URL(`https://${process.env.VERCEL_URL}`);
+
+  return new URL("http://localhost:3000");
+}

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Jost, Pinyon_Script } from "next/font/google";
 import { EVENT } from "@/lib/event";
+import { staticSiteUrl } from "@/lib/site";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -26,6 +27,9 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
+  // Sin esto Next arma las URLs de las imágenes OG contra localhost y
+  // WhatsApp no puede descargarlas: el preview sale sin foto.
+  metadataBase: staticSiteUrl(),
   title: `Primera Comunión de ${EVENT.child}`,
   description: `${EVENT.dateLabel} · Acompáñanos en este día tan especial.`,
   openGraph: {
@@ -33,7 +37,9 @@ export const metadata: Metadata = {
     description: `${EVENT.dateLabel} · Acompáñanos en este día tan especial.`,
     type: "website",
     locale: "es_MX",
+    siteName: `Primera Comunión de ${EVENT.child}`,
   },
+  twitter: { card: "summary_large_image" },
   robots: { index: false, follow: false },
 };
 

@@ -259,7 +259,7 @@ export default function AdminPanel({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por nombre, teléfono o código..."
+          placeholder="Buscar por nombre o teléfono..."
           className="mb-3 w-full rounded-[10px] border border-gold/40 bg-white px-3 py-[10px] text-[14px] text-cocoa outline-none"
         />
 
@@ -309,41 +309,53 @@ export default function AdminPanel({
             return (
               <div
                 key={guest.id}
-                className="rounded-[12px] border border-gold/30 bg-white px-[15px] py-[13px]"
+                className="flex flex-col rounded-[14px] border border-gold/30 bg-white px-[16px] py-[14px] transition-shadow hover:shadow-[0_8px_20px_-14px_rgba(120,74,58,.5)]"
               >
-                <div className="flex items-center justify-between gap-[10px]">
-                  <div className="text-[14px] font-medium text-cocoa">
-                    {guest.display_name}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-[15px] font-medium text-cocoa">
+                      {guest.display_name}
+                    </div>
+                    {guest.child_name && guest.mother_name && (
+                      <div className="truncate text-[12px] text-stone">
+                        mamá de {guest.child_name}
+                      </div>
+                    )}
                   </div>
                   <div
-                    className={`rounded-full px-[10px] py-1 text-[10px] font-medium tracking-[.1em] uppercase ${badge.className}`}
+                    className={`shrink-0 rounded-full px-[10px] py-1 text-[10px] font-medium tracking-[.1em] uppercase ${badge.className}`}
                   >
                     {badge.label}
                   </div>
                 </div>
 
-                <div className="mt-1 text-[12px] text-taupe">
+                <div className="mt-[6px] text-[13px] text-taupe">
                   {detailFor(guest)}
                 </div>
 
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 text-[11px] text-stone">
-                  <span>{guest.code}</span>
-                  {guest.child_name && guest.mother_name && (
-                    <span>· niño/a: {guest.child_name}</span>
-                  )}
-                  {!guest.phone && (
-                    <span className="text-[#b06a5a]">· sin teléfono</span>
-                  )}
-                  {guest.invite_sent_at && <span>· invitación enviada</span>}
-                </div>
+                {(guest.invite_sent_at || !guest.phone) && (
+                  <div className="mt-[6px] flex flex-wrap items-center gap-x-3 text-[11px]">
+                    {guest.invite_sent_at && (
+                      <span className="text-stone">
+                        ✓ Enviada el{" "}
+                        {SENT_FORMAT.format(new Date(guest.invite_sent_at))}
+                      </span>
+                    )}
+                    {!guest.phone && (
+                      <span className="text-[#b06a5a]">Sin teléfono</span>
+                    )}
+                  </div>
+                )}
 
                 {guest.message && (
-                  <div className="mt-2 rounded-[6px] border-l-2 border-rose bg-sand px-3 py-[9px] text-[12px] leading-[1.5] text-mocha italic">
+                  <div className="mt-[10px] rounded-[8px] border-l-2 border-rose bg-sand px-3 py-[9px] text-[12px] leading-[1.5] text-mocha italic">
                     “{guest.message}”
                   </div>
                 )}
 
-                <div className="mt-[11px] flex flex-wrap items-center gap-x-[14px] gap-y-2">
+                {/* `mt-auto` alinea la fila de acciones al fondo: en la rejilla
+                    de dos columnas las tarjetas tienen distinta altura. */}
+                <div className="mt-auto flex flex-wrap items-center gap-2 pt-[12px]">
                   <a
                     href={waLink(guest.phone ?? "", inviteMessage(guest, url))}
                     target="_blank"
@@ -351,50 +363,39 @@ export default function AdminPanel({
                     onClick={() => run(() => markInviteSent(guest.id))}
                     className="inline-flex items-center gap-[6px] rounded-full bg-whatsapp px-[14px] py-[7px] text-[12px] font-medium text-white no-underline hover:text-white"
                   >
-                    Enviar invitación
+                    {guest.invite_sent_at ? "Reenviar" : "Enviar invitación"}
                   </a>
 
-                  <button
-                    type="button"
-                    onClick={() => copyLink(guest)}
-                    className="cursor-pointer border-none bg-transparent p-0 text-[11px] text-clay underline"
-                  >
-                    {copiedId === guest.id ? "¡Liga copiada!" : "Copiar liga"}
-                  </button>
+                  <MiniAction onClick={() => copyLink(guest)}>
+                    {copiedId === guest.id ? "¡Copiada!" : "Copiar liga"}
+                  </MiniAction>
 
-                  <button
-                    type="button"
-                    onClick={() => setEditingId(guest.id)}
-                    className="cursor-pointer border-none bg-transparent p-0 text-[11px] text-clay underline"
-                  >
+                  <MiniAction onClick={() => setEditingId(guest.id)}>
                     Editar
-                  </button>
+                  </MiniAction>
 
                   {guest.status !== "pending" && (
-                    <button
-                      type="button"
-                      onClick={() => run(() => resetRsvp(guest.id))}
-                      className="cursor-pointer border-none bg-transparent p-0 text-[11px] text-clay underline"
-                    >
+                    <MiniAction onClick={() => run(() => resetRsvp(guest.id))}>
                       Reabrir
-                    </button>
+                    </MiniAction>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `¿Eliminar a ${guest.display_name} de la lista? Esto no se puede deshacer.`,
-                        )
-                      ) {
-                        run(() => deleteGuest(guest.id));
-                      }
-                    }}
-                    className="ml-auto cursor-pointer border-none bg-transparent p-0 text-[11px] text-[#c07a6a] underline"
-                  >
-                    Eliminar
-                  </button>
+                  <div className="ml-auto">
+                    <MiniAction
+                      tone="danger"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `¿Eliminar a ${guest.display_name} de la lista? Esto no se puede deshacer.`,
+                          )
+                        ) {
+                          run(() => deleteGuest(guest.id));
+                        }
+                      }}
+                    >
+                      Eliminar
+                    </MiniAction>
+                  </div>
                 </div>
               </div>
             );

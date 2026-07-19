@@ -16,6 +16,27 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_login_attempts: {
+        Row: {
+          fails: number;
+          ip: string;
+          locked_until: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          fails?: number;
+          ip: string;
+          locked_until?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          fails?: number;
+          ip?: string;
+          locked_until?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       guests: {
         Row: {
           allowed_adults: number;
@@ -115,6 +136,18 @@ export type Database = {
     };
     Functions: {
       gen_guest_code: { Args: { p_prefix?: string }; Returns: string };
+      register_login_attempt: {
+        Args: {
+          p_ip: string;
+          p_ok: boolean;
+          p_max?: number;
+          p_lockout?: string;
+        };
+        Returns: {
+          allowed: boolean;
+          retry_after_seconds: number;
+        }[];
+      };
       get_invitation: {
         Args: { p_code: string };
         Returns: {

@@ -30,6 +30,9 @@ export default async function LoginPage() {
         <p className="mx-auto mt-5 max-w-[280px] text-[14px] leading-[1.6] text-taupe">
           Aquí puedes ver cómo van las confirmaciones y enviar las invitaciones.
         </p>
+        <p className="mx-auto mt-2 max-w-[280px] text-[12px] text-stone">
+          Solo tú deberías tener este PIN.
+        </p>
 
         <LoginForm />
       </div>

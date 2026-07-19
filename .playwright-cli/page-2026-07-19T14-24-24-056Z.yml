@@ -1,0 +1,19 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Panel de anfitrión
+      - generic [ref=e5]: Emma
+      - generic [ref=e8]: ◆
+      - paragraph [ref=e10]: Aquí puedes ver cómo van las confirmaciones y enviar las invitaciones.
+      - paragraph [ref=e11]: Solo tú deberías tener este PIN.
+      - generic [ref=e12]:
+        - generic [ref=e13]: Tu PIN de 4 dígitos
+        - group "PIN de acceso" [ref=e14]:
+          - textbox "Dígito 1" [active] [ref=e15]
+          - textbox "Dígito 2" [ref=e16]
+          - textbox "Dígito 3" [ref=e17]
+          - textbox "Dígito 4" [ref=e18]
+        - button "Entrar" [disabled] [ref=e19]
+  - button "Open Next.js Dev Tools" [ref=e25] [cursor=pointer]:
+    - img [ref=e26]
+  - alert [ref=e29]

@@ -18,11 +18,15 @@ export default function LoginForm() {
 
   // Un PIN equivocado deja las casillas llenas y sin foco: se vacían para que
   // el siguiente intento no obligue a borrar a mano.
+  //
+  // La dependencia es `state`, no `state.error`: dos intentos fallidos seguidos
+  // devuelven el mismo texto, y comparando la cadena el efecto no volvería a
+  // correr. Cada envío devuelve un objeto nuevo, así que la identidad sí cambia.
   useEffect(() => {
     if (!state.error) return;
     setDigits(Array(LENGTH).fill(""));
     inputs.current[0]?.focus();
-  }, [state.error]);
+  }, [state]);
 
   const write = (values: string[], focusIndex: number) => {
     setDigits(values);

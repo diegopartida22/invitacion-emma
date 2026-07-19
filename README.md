@@ -26,13 +26,25 @@ Abre http://localhost:3000
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto | ✅ |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Llave pública; solo puede leer y responder invitaciones | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | Llave privada; la usa **solo** el panel admin | ⚠️ **falta pegarla** |
-| `ADMIN_PASSWORD` | Contraseña para entrar a `/admin` | ✅ |
-| `NEXT_PUBLIC_SITE_URL` | Dominio público (para armar las ligas de WhatsApp) | opcional en local |
+| `SUPABASE_SERVICE_ROLE_KEY` | Llave privada; la usa **solo** el panel admin | ✅ |
+| `ADMIN_PIN` | PIN de 4 dígitos para entrar a `/admin` | ✅ |
+| `NEXT_PUBLIC_SITE_URL` | Dominio público (ligas de WhatsApp e imagen del preview) | ⚠️ **en producción** |
 
 La `SUPABASE_SERVICE_ROLE_KEY` se copia del dashboard:
 **Project Settings → API Keys → `service_role`**.
 Sin ella el panel `/admin` muestra un aviso y no carga la lista.
+
+### Sobre el PIN
+
+Son 4 dígitos, o sea 10,000 combinaciones: poco para dejarlo suelto. Cada intento
+pasa antes por `register_login_attempt` en Postgres, que **bloquea esa IP 15
+minutos después de 5 fallos**. Si el contador no responde, el login no deja pasar.
+
+El desbloqueo manual, si te llegas a encerrar fuera:
+
+```sql
+delete from admin_login_attempts;
+```
 
 ---
 
@@ -42,7 +54,7 @@ Sin ella el panel `/admin` muestra un aviso y no carga la lista.
 | --- | --- | --- |
 | `/i/[code]` | invitado | Su invitación con su nombre y su RSVP |
 | `/admin` | anfitrión | Lista, altas, ediciones, bajas, envíos |
-| `/login` | anfitrión | Pide `ADMIN_PASSWORD` |
+| `/login` | anfitrión | Pide el `ADMIN_PIN` |
 | `/` | cualquiera | Portada sin datos de invitados |
 
 ---
@@ -122,12 +134,25 @@ Todo vive en un solo archivo: [`lib/event.ts`](lib/event.ts) — fecha, misa, re
 papás, madrinas, teléfono del anfitrión y datos bancarios. Cambiar algo ahí se
 refleja en toda la invitación.
 
-**Pendientes de llenar:**
+**Pendiente de llenar:**
 
 ```ts
-hostPhone: "523300000000",   // ← teléfono real para el botón de WhatsApp
 bank: { bank: "____________", clabe: "____ ____ ____ ____ __" },
 ```
+
+---
+
+## Preview de WhatsApp
+
+Cada liga genera su propia imagen de 1200×630 en
+[`app/i/[code]/opengraph-image.tsx`](app/i/[code]/opengraph-image.tsx), con el
+nombre de quien la recibe ("Con cariño para Claudia"). Las tipografías se leen de
+[`assets/`](assets/) porque `ImageResponse` no puede usar `next/font`.
+
+Para que WhatsApp la encuentre necesita una URL absoluta, y esa sale de
+`NEXT_PUBLIC_SITE_URL`. **Si no la defines en producción, el preview sale sin
+imagen.** WhatsApp cachea el preview por URL: si cambias el diseño después de
+mandar ligas, las ya enviadas conservan la imagen vieja un tiempo.
 
 ---
 
