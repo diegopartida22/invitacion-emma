@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design tokens — tomados 1:1 del diseño de Claude Design
+   (proyecto "Invitación Primera Comunión Emma").
+   Si necesitas un tono nuevo, tómalo del diseño: no inventes.
+   ============================================================ */
+@theme {
+  /* Fondos */
+  --color-shell: #efe2da; /* fondo base de la página */
+  --color-cream: #fffdfb; /* fondo de la tarjeta */
+  --color-sand: #f9ede7; /* bloques suaves (familia, countdown) */
+  --color-blush: #f2d3c8; /* sección RSVP */
+  --color-linen: #fbf5f1; /* fondo del panel de anfitrión */
+
+  /* Texto */
+  --color-cocoa: #5a4038; /* texto principal */
+  --color-mocha: #6b5148; /* texto secundario */
+  --color-taupe: #8c7168; /* texto terciario */
+  --color-stone: #a2887d; /* texto tenue */
+
+  /* Acentos */
+  --color-clay: #b07e6a; /* links, bordes, labels */
+  --color-rose: #c08d79; /* acento cálido, nombre de Emma */
+  --color-gold: #cbb08e; /* filetes y divisores */
+  --color-terracotta: #a9705a; /* labels sobre fondo blush */
+  --color-sienna: #8a5a48; /* texto sobre fondo blush */
+
+  /* Utilitarios */
+  --color-shadow: #784a3a; /* base de las sombras cálidas */
+  --color-whatsapp: #3fae6b;
+
+  /* Tipografías — las vars vienen de next/font en layout.tsx */
+  --font-sans: var(--font-jost), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-script: var(--font-pinyon), cursive;
+
+  /* Animaciones */
+  --animate-fade-up: fadeUp 0.9s ease both;
+  --animate-floaty: floaty 8s ease-in-out infinite;
+  --animate-floaty-b: floatyB 9s ease-in-out infinite;
+  /* Variantes lentas para las flores del pie: al desfasar las duraciones
+     ningún par de flores queda sincronizado. */
+  --animate-floaty-slow: floaty 11s ease-in-out infinite;
+  --animate-floaty-b-slow: floatyB 10s ease-in-out infinite;
+  --animate-bloom: bloom 0.6s ease both;
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    50% {
+      transform: translateY(-9px) rotate(2deg);
+    }
+  }
+  @keyframes floatyB {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    50% {
+      transform: translateY(-7px) rotate(-3deg);
+    }
+  }
+  @keyframes bloom {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* Estos estilos van dentro de `base` a propósito. Sin capa, le ganarían a
+   cualquier utilidad de Tailwind (las reglas sin capa siempre vencen a las
+   que sí la tienen, sin importar la especificidad): un `<a class="text-white">`
+   sobre fondo verde terminaba pintado de color clay e ilegible. */
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-shell);
+    color: var(--color-cocoa);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--color-clay);
+  }
+  a:hover {
+    color: #8f6151;
+  }
+
+  ::selection {
+    background: var(--color-blush);
+  }
+
+  input,
+  textarea {
+    font-family: var(--font-sans);
+  }
+  textarea {
+    resize: none;
+  }
+}
+
+/* Las flores flotan de forma puramente decorativa. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
