@@ -1,5 +1,6 @@
 import Flor from "@/components/Flor";
 import { EVENT } from "@/lib/event";
+import SectionLabel from "./SectionLabel";
 
 export default function Footer() {
   return (
@@ -18,10 +19,11 @@ export default function Footer() {
       </div>
 
       <div className="relative">
-        <div className="text-[11px] tracking-[.4em] text-terracotta uppercase">
-          Te espero con mucha ilusión
-        </div>
-        <div className="mt-[10px] font-script text-[64px] leading-none text-[#b0684f]">
+        <SectionLabel tone="blush">Te espero con mucha ilusión</SectionLabel>
+        {/* Un punto más oscuro que el #b0684f original: ahí se quedaba en
+            2.6:1 contra el rosa, por debajo del 3:1 que pide hasta un texto
+            de este tamaño. */}
+        <div className="mt-[10px] font-script text-[64px] leading-none text-[#9b5640]">
           {EVENT.child}
         </div>
         <div className="mt-3 font-serif text-[16px] text-sienna italic">

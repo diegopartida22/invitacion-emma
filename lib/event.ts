@@ -15,6 +15,14 @@ export const EVENT = {
   dateLabel: "Sábado 12 de Septiembre, 2026",
   dateShort: "12 · 09 · 2026",
 
+  /**
+   * A qué hora cierra el bloque que se guarda en el calendario del invitado.
+   * La invitación no anuncia hora de salida, así que esto es un estimado: sirve
+   * nada más para que el evento no le aparezca ocupándole el día entero.
+   * Si acaba resultando otra, cámbiala aquí y ya.
+   */
+  endISO: "2026-09-12T19:00:00-06:00",
+
   parents: ["Teresa Partida", "Luis Enrique Gutiérrez"],
   godmothers: ["Araceli Partida", "Karla Maya"],
 
@@ -54,11 +62,16 @@ export const EVENT = {
   rsvpDeadlineISO: "2026-09-05T23:59:59-06:00",
   rsvpDeadlineLabel: "sábado 5 de septiembre",
 
-  /** TODO: sustituir por los datos reales antes de enviar invitaciones. */
+  /**
+   * Para quien prefiera transferir en vez de llevar sobre. El titular va con
+   * el nombre completo tal como está en el banco, no como se le dice de
+   * cariño: si no coincide, la transferencia se rechaza.
+   */
   bank: {
-    bank: "____________",
-    holder: "Teresa Partida",
-    clabe: "____ ____ ____ ____ __",
+    bank: "Santander",
+    holder: "María Teresa Adriana Partida Fonseca",
+    /** Se muestra en bloques de 4 nada más para poder leerla sin perderse. */
+    clabe: "0143 2056 6447 2509 79",
   },
 } as const;
 

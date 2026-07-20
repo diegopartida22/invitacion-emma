@@ -162,10 +162,15 @@ export async function ogImage(name?: string | null) {
             {EVENT.child}
           </div>
 
+          {/* Contra los 34 del diseño original. Aquí cabe crecer mucho más que
+              en la invitación porque el lienzo es fijo (1200px) y la fecha no
+              se va a partir: en el preview de WhatsApp la tarjeta se ve
+              chiquita y esto es lo que hay que alcanzar a leer de reojo, sin
+              abrir la liga. */}
           <div
             style={{
               fontFamily: "Cormorant",
-              fontSize: 34,
+              fontSize: 52,
               letterSpacing: 2,
               color: "#7a5f55",
               marginTop: 4,
@@ -178,7 +183,10 @@ export async function ogImage(name?: string | null) {
             <div
               style={{
                 display: "flex",
-                marginTop: 34,
+                // Menos que los 34 de antes: la fecha creció y la pastilla se
+                // acercaba mucho al borde de abajo, que es justo lo que algunos
+                // clientes de chat recortan al armar el preview.
+                marginTop: 26,
                 padding: "12px 34px",
                 borderRadius: 999,
                 backgroundColor: "rgba(255,255,255,.72)",

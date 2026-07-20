@@ -1,12 +1,11 @@
 import { EVENT } from "@/lib/event";
 import Divider from "./Divider";
+import SectionLabel from "./SectionLabel";
 
 function NamePair({ label, names }: { label: string; names: readonly string[] }) {
   return (
     <div>
-      <div className="mb-3 text-[11px] tracking-[.4em] text-clay uppercase">
-        {label}
-      </div>
+      <SectionLabel className="mb-3">{label}</SectionLabel>
       <div className="font-serif text-[25px] leading-[1.35] text-cocoa">
         {names[0]}
         <br />

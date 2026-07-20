@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { EVENT_TARGET_MS } from "@/lib/event";
+import SectionLabel from "./SectionLabel";
 
 function split(now: number) {
   const diff = EVENT_TARGET_MS - now;
@@ -58,9 +59,7 @@ export default function Countdown({ serverNow }: { serverNow: number }) {
 
   return (
     <section className="px-[30px] py-[42px] text-center">
-      <div className="mb-[22px] text-[11px] tracking-[.4em] text-clay uppercase">
-        Cuenta regresiva
-      </div>
+      <SectionLabel className="mb-[22px]">Cuenta regresiva</SectionLabel>
 
       {cd.done ? (
         <div className="font-serif text-[28px] text-rose italic">

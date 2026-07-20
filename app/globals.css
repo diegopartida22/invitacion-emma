@@ -20,11 +20,18 @@
   --color-stone: #a2887d; /* texto tenue */
 
   /* Acentos */
-  --color-clay: #b07e6a; /* links, bordes, labels */
+  /* Oscurecido desde #b07e6a: como texto de 11-12px sobre cream daba 3.4:1 y
+     sobre sand 3.0:1, o sea por debajo del mínimo legible. Ahora da 5.3:1 y
+     4.7:1. Se usa igual para bordes, donde el cambio casi no se nota porque
+     casi todos van al 40-50% de opacidad. */
+  --color-clay: #8f5f4a; /* links, bordes, labels */
   --color-rose: #c08d79; /* acento cálido, nombre de Emma */
   --color-gold: #cbb08e; /* filetes y divisores */
   --color-terracotta: #a9705a; /* labels sobre fondo blush */
-  --color-sienna: #8a5a48; /* texto sobre fondo blush */
+  /* Oscurecido desde #8a5a48, que sobre el rosa del pie daba 3.6:1 y no
+     alcanzaba el 4.5:1 que pide un texto de este tamaño. Mismo matiz, solo
+     baja la luminosidad: ahora da 4.8:1 abajo y 5.5:1 en el RSVP. */
+  --color-sienna: #74483a; /* texto sobre fondo blush */
 
   /* Utilitarios */
   --color-shadow: #784a3a; /* base de las sombras cálidas */

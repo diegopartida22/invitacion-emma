@@ -10,6 +10,7 @@ import {
   waLink,
   type RsvpSnapshot,
 } from "@/lib/whatsapp";
+import SectionLabel from "./SectionLabel";
 
 const PILL_ACTIVE =
   "flex-1 cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,#c08d79,#b07e6a)] px-2 py-[14px] text-[13px] font-medium text-white shadow-[0_8px_18px_-10px_rgba(176,126,106,.9)]";
@@ -165,9 +166,9 @@ export default function Rsvp({
       <div className="absolute -top-[30px] left-1/2 h-[120px] w-[200px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(255,255,255,.5),transparent_70%)]" />
 
       <div className="relative">
-        <div className="mb-2 text-[11px] tracking-[.4em] text-terracotta uppercase">
+        <SectionLabel tone="blush" className="mb-2">
           {closed ? "Confirmaciones cerradas" : "Confirma tu asistencia"}
-        </div>
+        </SectionLabel>
         <div className="font-serif text-[15px] text-sienna italic">
           Con cariño para
         </div>

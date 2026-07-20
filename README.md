@@ -56,6 +56,7 @@ delete from admin_login_attempts;
 | `/admin` | anfitrión | Lista, altas, ediciones, bajas, envíos |
 | `/login` | anfitrión | Pide el `ADMIN_PIN` |
 | `/` | cualquiera | Portada sin datos de invitados |
+| `/calendario.ics` | cualquiera | El evento para Apple Calendar, Outlook, etc. |
 
 ---
 
@@ -167,17 +168,85 @@ migración.
 
 ---
 
+## Agregar al calendario
+
+Abajo de las tarjetas de misa y recepción hay dos botones. Los dos salen del
+mismo lugar, [`lib/calendar.ts`](lib/calendar.ts):
+
+- **Google Calendar** — una liga que abre Google con el evento ya lleno
+- **Apple · Outlook** — descarga [`/calendario.ics`](app/calendario.ics/route.ts)
+
+Es **un solo evento**, de la misa al final de la recepción, no dos. En un `.ics`
+sí caben dos, pero la liga de Google solo admite uno, y que Apple agregara dos
+entradas y Google una sola sería peor que la imprecisión: quien guarda esto
+quiere apartar el día. Los horarios y las direcciones de ambos momentos van
+completos en la descripción del evento.
+
+La hora de salida no está en la invitación, así que `EVENT.endISO` es un
+estimado (7 pm) y sirve nada más para que no ocupe el día entero en el
+calendario del invitado.
+
+El archivo se genera en el build (`force-static`): no depende de la petición.
+Si cambias algo en `lib/event.ts`, se regenera al desplegar. Para revisarlo:
+
+```bash
+curl -s http://localhost:3000/calendario.ics
+```
+
+Ojo con el formato si lo llegas a tocar: el RFC 5545 pide fines de línea CRLF y
+que ninguna línea pase de 75 **octetos** (no caracteres — los acentos de
+"Recepción" pesan dos). Eso lo resuelve `fold()` en `lib/calendar.ts`.
+
+---
+
 ## Personalizar los datos del evento
 
 Todo vive en un solo archivo: [`lib/event.ts`](lib/event.ts) — fecha, misa, recepción,
 papás, madrinas, teléfono del anfitrión y datos bancarios. Cambiar algo ahí se
 refleja en toda la invitación.
 
-**Pendiente de llenar:**
+El regalo admite las dos formas: sobre el día del evento o transferencia. La
+CLABE se muestra en bloques de cuatro para poder leerla, pero el botón de copiar
+la manda al portapapeles **sin espacios**, que es como la pide la app del banco.
 
-```ts
-bank: { bank: "____________", clabe: "____ ____ ____ ____ __" },
-```
+---
+
+## Rótulos de sección y contraste
+
+Los rotulitos que encabezan cada sección ("Mis papás", "Cuenta regresiva",
+"Confirma tu asistencia"…) salen todos de
+[`SectionLabel`](components/invitation/SectionLabel.tsx). **No escribas uno a
+mano**: andaban sueltos entre 11 y 12px, con espaciados de .2, .32, .4 y .42em,
+unos en normal y otros en medium, y se notaba.
+
+Lo único que cambia entre uno y otro es el color, con la prop `tone`:
+
+| `tone` | Color | Dónde |
+| --- | --- | --- |
+| `light` (default) | `clay` | Sobre cream o sand |
+| `blush` | `cocoa` | Sobre el rosa: RSVP y pie |
+
+El espaciado se encoge solo en pantallas angostas: "Te espero con mucha ilusión"
+mide 318px con el .4em de siempre y en un celular de 375px se partía en dos
+renglones. Con el `clamp` cabe en un renglón desde 320px para arriba.
+
+### Contraste
+
+Los colores no se escogen a ojo — el rosa es claro y engaña, un café que *se ve*
+oscuro puede quedarse en 3:1. El mínimo es **4.5:1** para texto normal y **3:1**
+a partir de ~24px. Lo que se corrigió, medido:
+
+| Texto | Antes | Ahora |
+| --- | --- | --- |
+| Rótulos sobre cream / sand (`clay`) | 3.4 / 3.0:1 | 5.3 / 4.7:1 |
+| "Te espero con mucha ilusión" | 2.5:1 | 5.8:1 |
+| "Confirma tu asistencia" | 2.9:1 | 6.7:1 |
+| Fecha del pie, "Con cariño para" (`sienna`) | 3.6:1 | 4.8:1 |
+| "Emma" del pie | 2.6:1 | 3.4:1 |
+
+`clay` y `sienna` se oscurecieron en [`globals.css`](app/globals.css)
+conservando el matiz. Como `clay` también se usa en bordes, ahí el cambio casi
+no se nota: casi todos van al 40-50% de opacidad.
 
 ---
 

@@ -8,6 +8,7 @@ import Gift from "./Gift";
 import Greeting from "./Greeting";
 import Hero from "./Hero";
 import Rsvp from "./Rsvp";
+import SectionLabel from "./SectionLabel";
 
 /**
  * La tarjeta completa.
@@ -40,9 +41,9 @@ export default function InvitationCard({
           <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6e4dc,#f2d3c8)] px-[30px] pt-[46px] pb-[50px] text-center">
             <div className="absolute -top-[30px] left-1/2 h-[120px] w-[200px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(255,255,255,.5),transparent_70%)]" />
             <div className="relative">
-              <div className="mb-2 text-[11px] tracking-[.4em] text-terracotta uppercase">
+              <SectionLabel tone="blush" className="mb-2">
                 Confirma tu asistencia
-              </div>
+              </SectionLabel>
               <div className="rounded-[20px] bg-[rgba(255,255,255,.72)] px-[22px] py-[26px] shadow-[0_12px_30px_-18px_rgba(120,74,58,.4)] backdrop-blur-[4px]">
                 <p className="font-serif text-[19px] leading-[1.5] text-cocoa italic">
                   Abre la liga personalizada que te enviamos por WhatsApp para

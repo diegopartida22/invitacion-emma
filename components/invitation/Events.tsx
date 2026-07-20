@@ -1,4 +1,5 @@
 import { EVENT } from "@/lib/event";
+import AddToCalendar from "./AddToCalendar";
 
 type EventInfo = (typeof EVENT)["mass"] | (typeof EVENT)["reception"];
 
@@ -34,7 +35,9 @@ function EventCard({
           {info.title}
         </div>
 
-        <div className="mt-2 mb-[14px] font-serif text-[22px] text-rose italic">
+        {/* La hora es lo que más se consulta de esta tarjeta, más que el
+            nombre del lugar. Va más grande que el título de la sección. */}
+        <div className="mt-2 mb-[14px] font-serif text-[30px] leading-none text-rose italic">
           {info.time}
         </div>
 
@@ -74,6 +77,9 @@ export default function Events() {
     <section className="grid gap-[22px] px-[30px] pt-2 pb-11">
       <EventCard info={EVENT.mass} glow="top-right" symbolSize={26} />
       <EventCard info={EVENT.reception} glow="bottom-left" symbolSize={24} />
+      {/* Va al final a propósito: primero se lee dónde y a qué hora, y ya con
+          eso en la cabeza tiene sentido ofrecer guardarlo. */}
+      <AddToCalendar />
     </section>
   );
 }
