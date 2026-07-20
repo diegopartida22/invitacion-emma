@@ -28,18 +28,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
   const invitation = await getInvitation(code);
 
-  const title = invitation
-    ? `${invitation.display_name}, estás invitada · Primera Comunión de ${EVENT.child}`
-    : `Primera Comunión de ${EVENT.child}`;
-
   // WhatsApp recorta la descripción como a los 120 caracteres, así que lo
   // importante (fecha y llamado a confirmar) va al principio.
   const description = `${EVENT.dateLabel}. Ábrela para confirmar tu asistencia.`;
 
+  // El título de la pestaña se queda con el del layout ("Emma · Primera
+  // Comunión"): corto y legible. El nombre del invitado solo va en el preview
+  // de WhatsApp, que es donde sí luce y hay espacio.
   return {
-    title,
     description,
-    openGraph: { title, description, type: "website", locale: "es_MX" },
+    openGraph: {
+      title: invitation
+        ? `${invitation.display_name}, estás invitada · Primera Comunión de ${EVENT.child}`
+        : `Primera Comunión de ${EVENT.child}`,
+      description,
+      type: "website",
+      locale: "es_MX",
+    },
   };
 }
 

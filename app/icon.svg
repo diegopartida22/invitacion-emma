@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Primera Comunión de Emma">
+  <!--
+    Versión mínima de la flor del diseño. Las flores reales llevan decenas de
+    pétalos y estambres: a 16px eso se vuelve una mancha. Aquí quedan cinco
+    pétalos y un centro dorado, que es lo único que sigue leyéndose chiquito.
+
+    Va en negativo (flor crema sobre fondo cálido) a propósito: la combinación
+    original, pálida sobre pálido, se perdía en la pestaña del navegador.
+    Colores tomados de app/globals.css.
+  -->
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c08d79"/>
+      <stop offset="1" stop-color="#8a5a48"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="15" fill="url(#fondo)"/>
+
+  <g fill="#fffdfb">
+    <ellipse cx="32" cy="19.5" rx="8.6" ry="13.2" transform="rotate(0 32 33)"/>
+    <ellipse cx="32" cy="19.5" rx="8.6" ry="13.2" transform="rotate(72 32 33)"/>
+    <ellipse cx="32" cy="19.5" rx="8.6" ry="13.2" transform="rotate(144 32 33)"/>
+    <ellipse cx="32" cy="19.5" rx="8.6" ry="13.2" transform="rotate(216 32 33)"/>
+    <ellipse cx="32" cy="19.5" rx="8.6" ry="13.2" transform="rotate(288 32 33)"/>
+  </g>
+
+  <circle cx="32" cy="33" r="6.4" fill="#cbb08e"/>
+</svg>

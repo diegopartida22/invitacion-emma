@@ -30,7 +30,13 @@ export const metadata: Metadata = {
   // Sin esto Next arma las URLs de las imágenes OG contra localhost y
   // WhatsApp no puede descargarlas: el preview sale sin foto.
   metadataBase: staticSiteUrl(),
-  title: `Primera Comunión de ${EVENT.child}`,
+  // `default` es lo que ve el invitado en su pestaña; `template` arma el de las
+  // páginas internas ("Panel de anfitrión · Emma"). El separador es · y no |
+  // para seguir la tipografía del diseño, que ya lo usa en "12 · 09 · 2026".
+  title: {
+    default: `${EVENT.child} · Primera Comunión`,
+    template: `%s · ${EVENT.child}`,
+  },
   description: `${EVENT.dateLabel} · Acompáñanos en este día tan especial.`,
   openGraph: {
     title: `Primera Comunión de ${EVENT.child}`,
