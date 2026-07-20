@@ -112,6 +112,26 @@ const ANSWERED_FORMAT = new Intl.DateTimeFormat("es-MX", {
   timeZone: TZ,
 });
 
+/**
+ * La línea chica bajo el nombre: quién es esa persona en realidad.
+ *
+ * Con nombre personalizado arriba solo se ve el apodo ("Faby"), así que aquí
+ * abajo va el de la lista para poder cruzarlo con el Excel.
+ */
+function subtitleFor(guest: Guest) {
+  const parts: string[] = [];
+
+  if (guest.display_name_override) {
+    if (guest.mother_name) parts.push(guest.mother_name);
+    else if (guest.child_name) parts.push(guest.child_name);
+  }
+  if (guest.mother_name && guest.child_name) {
+    parts.push(`mamá de ${guest.child_name}`);
+  }
+
+  return parts.join(" · ") || null;
+}
+
 /** Una respuesta del historial, en corto: "2 adultos · 1 niño" o "no asisten". */
 function entryLabel(entry: RsvpEntry) {
   return entry.status === "yes" ? people(entry.adults, entry.kids) : "no asisten";
@@ -189,6 +209,8 @@ export default function AdminPanel({
       if (!needle) return true;
       return (
         g.display_name.toLowerCase().includes(needle) ||
+        // Con apodo, el nombre de la lista deja de estar en `display_name`.
+        (g.mother_name ?? "").toLowerCase().includes(needle) ||
         (g.child_name ?? "").toLowerCase().includes(needle) ||
         (g.phone ?? "").includes(needle) ||
         g.code.toLowerCase().includes(needle)
@@ -362,9 +384,9 @@ export default function AdminPanel({
                     <div className="truncate text-[15px] font-medium text-cocoa">
                       {guest.display_name}
                     </div>
-                    {guest.child_name && guest.mother_name && (
+                    {subtitleFor(guest) && (
                       <div className="truncate text-[12px] text-stone">
-                        mamá de {guest.child_name}
+                        {subtitleFor(guest)}
                       </div>
                     )}
                   </div>

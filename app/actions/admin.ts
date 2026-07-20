@@ -10,6 +10,8 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 export type GuestInput = {
   motherName: string;
   childName: string;
+  /** Con qué nombre se le saluda, si el de la lista no sirve. Opcional. */
+  displayName: string;
   phone: string;
   allowedAdults: number;
   allowedKids: number;
@@ -28,6 +30,7 @@ function toCount(value: unknown) {
 type GuestColumns = {
   mother_name: string | null;
   child_name: string | null;
+  display_name_override: string | null;
   phone: string | null;
   allowed_adults: number;
   allowed_kids: number;
@@ -38,15 +41,19 @@ type Normalized = { error: string } | { values: GuestColumns };
 function normalize(input: GuestInput): Normalized {
   const motherName = clean(input.motherName);
   const childName = clean(input.childName);
+  const displayName = clean(input.displayName);
 
-  if (!motherName && !childName) {
-    return { error: "Necesitas al menos el nombre de la mamá o del niño/a." };
+  if (!motherName && !childName && !displayName) {
+    return {
+      error: "Necesitas al menos un nombre: el de la mamá, el del niño/a o uno personalizado.",
+    };
   }
 
   return {
     values: {
       mother_name: motherName || null,
       child_name: childName || null,
+      display_name_override: displayName || null,
       phone: normalizePhone(input.phone) || null,
       allowed_adults: toCount(input.allowedAdults),
       allowed_kids: toCount(input.allowedKids),

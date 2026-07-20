@@ -65,6 +65,9 @@ export default function GuestForm({
 }) {
   const [motherName, setMotherName] = useState(guest?.mother_name ?? "");
   const [childName, setChildName] = useState(guest?.child_name ?? "");
+  const [displayName, setDisplayName] = useState(
+    guest?.display_name_override ?? "",
+  );
   const [phone, setPhone] = useState(guest?.phone ?? "");
   const [adults, setAdults] = useState(guest?.allowed_adults ?? 2);
   const [kids, setKids] = useState(guest?.allowed_kids ?? 0);
@@ -89,6 +92,14 @@ export default function GuestForm({
           className={INPUT}
         />
         <input
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder={`Cómo saludarla (opcional, ej. ${
+            motherName.trim().split(" ")[0] || "Faby"
+          })`}
+          className={INPUT}
+        />
+        <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           inputMode="numeric"
@@ -103,8 +114,9 @@ export default function GuestForm({
       </div>
 
       <p className="mb-3 text-[11px] leading-[1.5] text-stone">
-        En la invitación se muestra el nombre de la mamá; si lo dejas vacío, se
-        usa el del niño/a.
+        El nombre de en medio es el que ve la invitada y con el que la saluda el
+        WhatsApp. Si lo dejas vacío se usa el de la mamá, y si tampoco hay, el
+        del niño/a.
       </p>
 
       {error && (
@@ -128,6 +140,7 @@ export default function GuestForm({
             onSubmit({
               motherName,
               childName,
+              displayName,
               phone,
               allowedAdults: adults,
               allowedKids: kids,

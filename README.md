@@ -4,7 +4,7 @@ Invitación digital personalizada por invitado, con confirmación de asistencia 
 y un panel de anfitrión para administrar la lista.
 
 - **Next.js 16** (App Router) · **Tailwind CSS v4** · **Supabase (Postgres)**
-- Cada invitado recibe una liga propia: `/i/emma-t3k9`
+- Cada invitado recibe una liga propia: `emma-comunion.com/i/k3m9p`
 - El diseño es un port 1:1 del proyecto de Claude Design (`Invitacion Emma.dc.html`)
 
 ---
@@ -67,9 +67,10 @@ Dos tablas en Supabase:
 
 | Columna | Nota |
 | --- | --- |
-| `code` | Se genera solo: `emma-t3k9`. Alfabeto sin caracteres ambiguos (0/O/1/l) |
-| `mother_name`, `child_name` | Al menos uno es obligatorio |
-| `display_name` | Columna generada: mamá → niño/a → "Invitado especial" |
+| `code` | Se genera solo: 5 caracteres, `k3m9p`. Alfabeto sin ambigüedades (0/O/1/l) |
+| `mother_name`, `child_name` | Al menos uno, salvo que pongas `display_name_override` |
+| `display_name_override` | Opcional. Con qué saludarla: un apodo ("Faby") o algo que no es una mamá ("Familia Hernández") |
+| `display_name` | Columna generada: override → mamá → niño/a → "Invitado especial" |
 | `phone` | Solo para armar la liga de WhatsApp; **nunca** sale al navegador del invitado |
 | `allowed_adults`, `allowed_kids` | Lugares apartados |
 | `status` | `pending` · `yes` · `no` |
@@ -129,6 +130,9 @@ Salta duplicados: dentro del mismo archivo y contra lo que ya está en la base
   cambia solo: invitación la primera vez, recordatorio si ya se mandó y no han
   contestado, y "te la dejo de nuevo" si ya respondieron
 - Copiar liga, editar, reabrir RSVP (avisa que se borra el mensajito) y eliminar
+- En **Editar**, el campo "Cómo saludarla" cambia el nombre que ve la invitada,
+  el del saludo de WhatsApp y el del preview. La tarjeta sigue mostrando abajo
+  el nombre de la lista para poder cruzarlo con el Excel
 - Resumen de los mensajitos recibidos
 
 ## Cambios y cancelaciones

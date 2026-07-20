@@ -47,6 +47,7 @@ export type Database = {
           confirmed_kids: number;
           created_at: string;
           display_name: string | null;
+          display_name_override: string | null;
           id: string;
           invite_sent_at: string | null;
           message: string | null;
@@ -64,6 +65,7 @@ export type Database = {
           confirmed_adults?: number;
           confirmed_kids?: number;
           created_at?: string;
+          display_name_override?: string | null;
           id?: string;
           invite_sent_at?: string | null;
           message?: string | null;
@@ -81,6 +83,7 @@ export type Database = {
           confirmed_adults?: number;
           confirmed_kids?: number;
           created_at?: string;
+          display_name_override?: string | null;
           id?: string;
           invite_sent_at?: string | null;
           message?: string | null;
