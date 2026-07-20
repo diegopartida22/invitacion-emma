@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   // y la imagen del preview truena.
   outputFileTracingIncludes: {
     "/i/[code]/opengraph-image": ["./assets/**"],
+    "/opengraph-image": ["./assets/**"],
   },
 };
 

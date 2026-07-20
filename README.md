@@ -144,15 +144,35 @@ bank: { bank: "____________", clabe: "____ ____ ____ ____ __" },
 
 ## Preview de WhatsApp
 
-Cada liga genera su propia imagen de 1200×630 en
-[`app/i/[code]/opengraph-image.tsx`](app/i/[code]/opengraph-image.tsx), con el
-nombre de quien la recibe ("Con cariño para Claudia"). Las tipografías se leen de
-[`assets/`](assets/) porque `ImageResponse` no puede usar `next/font`.
+El dibujo vive en [`lib/og.tsx`](lib/og.tsx) y lo usan dos rutas: la portada
+([`app/opengraph-image.tsx`](app/opengraph-image.tsx)) y la invitación de cada
+quien ([`app/i/[code]/opengraph-image.tsx`](app/i/%5Bcode%5D/opengraph-image.tsx)),
+que además le agrega el "Con cariño para Claudia". Son 1200×630. Las tipografías
+se leen de [`assets/`](assets/) porque `ImageResponse` no puede usar `next/font`.
 
-Para que WhatsApp la encuentre necesita una URL absoluta, y esa sale de
-`NEXT_PUBLIC_SITE_URL`. **Si no la defines en producción, el preview sale sin
-imagen.** WhatsApp cachea el preview por URL: si cambias el diseño después de
-mandar ligas, las ya enviadas conservan la imagen vieja un tiempo.
+### Si el preview sale sin imagen
+
+WhatsApp necesita una URL **absoluta y pública**, y esa la arma `metadataBase`
+con [`staticSiteUrl()`](lib/site.ts). El orden en que la busca importa:
+
+1. `NEXT_PUBLIC_SITE_URL` — defínela y ya, es la única que no adivina
+2. `VERCEL_PROJECT_PRODUCTION_URL` — el dominio público (`emma-comunion.com`)
+3. `VERCEL_URL` — **último recurso**: apunta al deploy concreto
+   (`invitacion-emma-a1b2c3….vercel.app`), que trae activada la protección de
+   Vercel y responde con un redirect al login. El preview sale sin foto.
+
+Para revisar qué está mandando el sitio, sin adivinar:
+
+```bash
+curl -s https://emma-comunion.com/i/CODIGO | grep 'og:image'
+# y luego, contra esa URL exacta:
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' 'LA_URL_DE_ARRIBA'
+# 200 image/png = bien · 302 = protección de Vercel · 404 = ruta mal
+```
+
+WhatsApp cachea el preview por URL. Si arreglas algo después de mandar ligas,
+las ya enviadas conservan un rato lo viejo: para verificar, prueba con un código
+que todavía no hayas compartido.
 
 ---
 
@@ -169,5 +189,4 @@ npm run import:guests  # importador de Excel
 
 En Vercel: importa el repo y copia las 5 variables de entorno, agregando
 `NEXT_PUBLIC_SITE_URL=https://tu-dominio.com` para que las ligas de WhatsApp
-apunten al dominio real y no a `localhost`.
-# invitacion-emma
+y la imagen del preview apunten al dominio real y no al del deploy.
