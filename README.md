@@ -122,9 +122,44 @@ Salta duplicados: dentro del mismo archivo y contra lo que ya está en la base
 
 - Totales arriba: confirmados, pendientes, no asisten y **cuántas personas** suman
 - Filtros y buscador por nombre o teléfono
-- Botón de WhatsApp por invitado, con el mensaje y su liga ya escritos
-- Copiar liga, editar, reabrir RSVP (si alguien se equivocó) y eliminar
+- Filtro **Cambiaron**: quiénes respondieron más de una vez, con su rastro
+  completo (`3 adultos · 2 niños → 1 adulto · 1 niño → no asisten`). Sale de
+  `rsvp_log`, que guarda cada respuesta desde siempre
+- Botón de WhatsApp por invitado, con el mensaje y su liga ya escritos. El texto
+  cambia solo: invitación la primera vez, recordatorio si ya se mandó y no han
+  contestado, y "te la dejo de nuevo" si ya respondieron
+- Copiar liga, editar, reabrir RSVP (avisa que se borra el mensajito) y eliminar
 - Resumen de los mensajitos recibidos
+
+## Cambios y cancelaciones
+
+Un invitado puede cambiar su respuesta cuantas veces quiera hasta la fecha
+límite. Cada cambio queda en `rsvp_log`, y el panel lo marca.
+
+Cuando alguien modifica algo que la organizadora **ya tenía contado**, la
+pantalla se lo dice y el mensaje de WhatsApp lo explica solo:
+
+| Qué pasó | Qué le llega a la organizadora |
+| --- | --- |
+| Confirma por primera vez | "Confirmo asistencia … con 2 adultos y 1 niño" |
+| Cambia el número | "Cambié mi confirmación: ahora seremos …" |
+| Cancela después de confirmar | "**Les había confirmado**, pero al final no vamos a poder…" |
+| Se arrepiente de un "no" | "Al final sí vamos a poder acompañarlos…" |
+
+Ese aviso depende de que el invitado apriete el botón, por eso el panel también
+lo marca por su cuenta: una cosa cubre a la otra.
+
+### Fecha límite
+
+`EVENT.rsvpDeadlineISO` en [`lib/event.ts`](lib/event.ts). Después de esa fecha
+la invitación se ve igual pero el RSVP queda de solo lectura, con un botón para
+escribirle a la organizadora.
+
+El plazo se revisa en el servidor (nunca con el reloj del celular) y se aplica
+también en la Server Action, no solo escondiendo el formulario. A diferencia del
+tope de lugares, este candado **no** vive en Postgres: es una cortesía para
+cerrar cuentas, no una frontera de seguridad, y así la fecha se cambia sin una
+migración.
 
 ---
 

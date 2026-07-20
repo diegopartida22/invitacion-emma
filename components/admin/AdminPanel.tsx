@@ -12,15 +12,24 @@ import {
 } from "@/app/actions/admin";
 import { logout } from "@/app/actions/auth";
 import { EVENT } from "@/lib/event";
-import type { AdminTotals, Guest, RsvpStatus } from "@/lib/types";
+import type {
+  AdminTotals,
+  Guest,
+  GuestHistory,
+  RsvpEntry,
+  RsvpStatus,
+} from "@/lib/types";
 import { inviteMessage, invitationUrl, waLink } from "@/lib/whatsapp";
 import GuestForm from "./GuestForm";
 
-const FILTERS: { key: "all" | RsvpStatus; label: string }[] = [
+type FilterKey = "all" | RsvpStatus | "changed";
+
+const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Todos" },
   { key: "yes", label: "Confirmados" },
   { key: "pending", label: "Pendientes" },
   { key: "no", label: "No asisten" },
+  { key: "changed", label: "Cambiaron" },
 ];
 
 const BADGE: Record<RsvpStatus, { className: string; label: string }> = {
@@ -82,10 +91,31 @@ function detailFor(guest: Guest) {
   return `Apartados ${people(guest.allowed_adults, guest.allowed_kids)}`;
 }
 
+/*
+ * La zona horaria va fija. Sin ella, el servidor (que en Vercel corre en UTC)
+ * y el navegador formatean distinto la misma fecha y React reclama por
+ * hidratación; con hora incluida pasaría siempre, no solo cerca de medianoche.
+ */
+const TZ = "America/Mexico_City";
+
 const SENT_FORMAT = new Intl.DateTimeFormat("es-MX", {
   day: "numeric",
   month: "short",
+  timeZone: TZ,
 });
+
+const ANSWERED_FORMAT = new Intl.DateTimeFormat("es-MX", {
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: TZ,
+});
+
+/** Una respuesta del historial, en corto: "2 adultos · 1 niño" o "no asisten". */
+function entryLabel(entry: RsvpEntry) {
+  return entry.status === "yes" ? people(entry.adults, entry.kids) : "no asisten";
+}
 
 /** Acción secundaria: texto discreto, sin subrayado, para no competir. */
 function MiniAction({
@@ -113,13 +143,15 @@ function MiniAction({
 export default function AdminPanel({
   guests,
   totals,
+  history,
   baseUrl,
 }: {
   guests: Guest[];
   totals: AdminTotals;
+  history: GuestHistory;
   baseUrl: string;
 }) {
-  const [filter, setFilter] = useState<"all" | RsvpStatus>("all");
+  const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -139,10 +171,21 @@ export default function AdminPanel({
     });
   };
 
+  /** Quiénes contestaron más de una vez: la cuenta que ella tenía ya cambió. */
+  const changedIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const g of guests) {
+      if ((history[g.id]?.length ?? 0) > 1) ids.add(g.id);
+    }
+    return ids;
+  }, [guests, history]);
+
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return guests.filter((g) => {
-      if (filter !== "all" && g.status !== filter) return false;
+      if (filter === "changed") {
+        if (!changedIds.has(g.id)) return false;
+      } else if (filter !== "all" && g.status !== filter) return false;
       if (!needle) return true;
       return (
         g.display_name.toLowerCase().includes(needle) ||
@@ -151,7 +194,7 @@ export default function AdminPanel({
         g.code.toLowerCase().includes(needle)
       );
     });
-  }, [guests, filter, query]);
+  }, [guests, filter, query, changedIds]);
 
   const messages = guests.filter((g) => g.message);
 
@@ -276,6 +319,9 @@ export default function AdminPanel({
               }
             >
               {f.label}
+              {f.key === "changed" && changedIds.size > 0 && (
+                <span className="ml-[6px] opacity-70">{changedIds.size}</span>
+              )}
             </button>
           ))}
         </div>
@@ -333,7 +379,9 @@ export default function AdminPanel({
                   {detailFor(guest)}
                 </div>
 
-                {(guest.invite_sent_at || !guest.phone) && (
+                {(guest.invite_sent_at ||
+                  guest.responded_at ||
+                  !guest.phone) && (
                   <div className="mt-[6px] flex flex-wrap items-center gap-x-3 text-[11px]">
                     {guest.invite_sent_at && (
                       <span className="text-stone">
@@ -341,9 +389,29 @@ export default function AdminPanel({
                         {SENT_FORMAT.format(new Date(guest.invite_sent_at))}
                       </span>
                     )}
+                    {guest.responded_at && (
+                      <span className="text-stone">
+                        Respondió el{" "}
+                        {ANSWERED_FORMAT.format(new Date(guest.responded_at))}
+                      </span>
+                    )}
                     {!guest.phone && (
                       <span className="text-[#b06a5a]">Sin teléfono</span>
                     )}
+                  </div>
+                )}
+
+                {/* El rastro completo, no solo la última respuesta: si alguien
+                    confirmó 4 y luego bajó a 2, esos 2 lugares hay que soltarlos
+                    y sin esto no había manera de enterarse. */}
+                {changedIds.has(guest.id) && (
+                  <div className="mt-[8px] rounded-[8px] bg-[#fdf1ea] px-[10px] py-[7px] text-[11px] leading-[1.6]">
+                    <span className="font-medium text-terracotta">
+                      Cambió su respuesta
+                    </span>
+                    <div className="text-taupe">
+                      {history[guest.id]!.map(entryLabel).join(" → ")}
+                    </div>
                   </div>
                 )}
 
@@ -375,7 +443,16 @@ export default function AdminPanel({
                   </MiniAction>
 
                   {guest.status !== "pending" && (
-                    <MiniAction onClick={() => run(() => resetRsvp(guest.id))}>
+                    <MiniAction
+                      onClick={() => {
+                        // Reabrir borra la respuesta y, con ella, el mensajito
+                        // que dejó esa familia. Eliminar sí avisaba; esto no.
+                        const warning = guest.message
+                          ? `Vas a borrar la respuesta de ${guest.display_name} y también su mensajito para ${EVENT.child}. ¿Seguimos?`
+                          : `${guest.display_name} va a poder responder de nuevo. Su respuesta actual se borra. ¿Seguimos?`;
+                        if (confirm(warning)) run(() => resetRsvp(guest.id));
+                      }}
+                    >
                       Reabrir
                     </MiniAction>
                   )}

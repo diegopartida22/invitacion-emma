@@ -17,6 +17,21 @@ export type Guest = Omit<GuestRow, "status" | "display_name"> & {
   display_name: string;
 };
 
+/**
+ * Una respuesta del historial (`rsvp_log`). La tabla se llenaba desde el
+ * principio pero nadie la leía: es lo que permite ver que una familia
+ * confirmó 4 lugares y luego los bajó a 2.
+ */
+export type RsvpEntry = {
+  status: RsvpStatus;
+  adults: number;
+  kids: number;
+  at: string;
+};
+
+/** Historial por invitado, de la respuesta más vieja a la más nueva. */
+export type GuestHistory = Record<string, RsvpEntry[]>;
+
 export type AdminTotals = {
   total: number;
   confirmed: number;

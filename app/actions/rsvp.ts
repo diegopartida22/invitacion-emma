@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { EVENT, rsvpIsClosed } from "@/lib/event";
 import { publicClient } from "@/lib/supabase/public";
 import { toInvitation, type Invitation } from "@/lib/types";
 
@@ -26,6 +27,16 @@ export async function submitRsvp(input: {
   const code = String(input.code ?? "").trim();
   if (!code) return { ok: false, error: "Invitación no encontrada." };
 
+  // A diferencia del tope de lugares, este candado vive aquí y no en Postgres:
+  // es una cortesía para que la organizadora cierre cuentas, no una frontera
+  // de seguridad, y así la fecha se cambia en lib/event.ts sin una migración.
+  if (rsvpIsClosed()) {
+    return {
+      ok: false,
+      error: `Las confirmaciones cerraron el ${EVENT.rsvpDeadlineLabel}. Escríbele a la mamá de ${EVENT.child} para cualquier cambio.`,
+    };
+  }
+
   const toCount = (n: unknown) => {
     const parsed = Math.floor(Number(n));
     return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 30) : 0;
@@ -43,7 +54,9 @@ export async function submitRsvp(input: {
     console.error("submit_rsvp falló:", error.message);
     return {
       ok: false,
-      error: "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
+      error: error.message.includes("RSVP_SIN_PERSONAS")
+        ? "Dinos cuántos van a venir, aunque sea una persona."
+        : "No pudimos guardar tu respuesta. Inténtalo de nuevo.",
     };
   }
 

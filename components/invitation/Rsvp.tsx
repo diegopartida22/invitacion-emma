@@ -4,7 +4,12 @@ import { useState, useTransition } from "react";
 import { submitRsvp } from "@/app/actions/rsvp";
 import { EVENT } from "@/lib/event";
 import type { Invitation } from "@/lib/types";
-import { confirmationMessage, waLink } from "@/lib/whatsapp";
+import {
+  confirmationMessage,
+  lateChangeMessage,
+  waLink,
+  type RsvpSnapshot,
+} from "@/lib/whatsapp";
 
 const PILL_ACTIVE =
   "flex-1 cursor-pointer rounded-full border-none bg-[linear-gradient(135deg,#c08d79,#b07e6a)] px-2 py-[14px] text-[13px] font-medium text-white shadow-[0_8px_18px_-10px_rgba(176,126,106,.9)]";
@@ -54,8 +59,25 @@ function Stepper({
   );
 }
 
-export default function Rsvp({ invitation }: { invitation: Invitation }) {
+export default function Rsvp({
+  invitation,
+  closed,
+}: {
+  invitation: Invitation;
+  closed: boolean;
+}) {
   const [saved, setSaved] = useState<Invitation>(invitation);
+
+  /**
+   * Cómo estaba la respuesta al abrir la página. Se congela con `useState`
+   * porque el prop se actualiza al revalidar, y necesitamos el "antes" para
+   * poder contarle a la organizadora qué cambió.
+   */
+  const [initial] = useState<RsvpSnapshot>(() => ({
+    status: invitation.status,
+    adults: invitation.confirmed_adults,
+    kids: invitation.confirmed_kids,
+  }));
   const [submitted, setSubmitted] = useState(invitation.status !== "pending");
   const [attending, setAttending] = useState<boolean | null>(
     invitation.status === "pending" ? null : invitation.status === "yes",
@@ -74,9 +96,30 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  /**
+   * Al elegir "sí" hay que reponer los lugares si quedaron en cero.
+   *
+   * Pasa cuando alguien contesta que no puede ir y luego se arrepiente sin
+   * recargar: al guardar el "no" los contadores se van a 0, y el formulario
+   * los volvía a mostrar así. Confirmaba asistencia para nadie.
+   */
+  const chooseAttending = (next: boolean) => {
+    setAttending(next);
+    setError(null);
+    if (next && adults + kids === 0) {
+      setAdults(invitation.allowed_adults);
+      setKids(invitation.allowed_kids);
+    }
+  };
+
   const handleSubmit = () => {
     if (attending === null) return;
     setError(null);
+
+    if (attending && adults + kids === 0) {
+      setError("Dinos cuántos van a venir, aunque sea una persona.");
+      return;
+    }
 
     startTransition(async () => {
       const result = await submitRsvp({
@@ -100,15 +143,22 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
   };
 
   const savedYes = saved.status === "yes";
+  const current: RsvpSnapshot = {
+    status: saved.status,
+    adults: saved.confirmed_adults,
+    kids: saved.confirmed_kids,
+  };
   const whatsapp = waLink(
     EVENT.hostPhone,
-    confirmationMessage(
-      saved,
-      savedYes,
-      saved.confirmed_adults,
-      saved.confirmed_kids,
-    ),
+    confirmationMessage(invitation.display_name, initial, current),
   );
+
+  /** Cambió algo respecto a lo que la organizadora ya tenía apuntado. */
+  const isChange =
+    initial.status !== "pending" &&
+    (initial.status !== current.status ||
+      initial.adults !== current.adults ||
+      initial.kids !== current.kids);
 
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6e4dc,#f2d3c8)] px-[30px] pt-[46px] pb-[50px] text-center">
@@ -116,7 +166,7 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
 
       <div className="relative">
         <div className="mb-2 text-[11px] tracking-[.4em] text-terracotta uppercase">
-          Confirma tu asistencia
+          {closed ? "Confirmaciones cerradas" : "Confirma tu asistencia"}
         </div>
         <div className="font-serif text-[15px] text-sienna italic">
           Con cariño para
@@ -125,7 +175,28 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
           {invitation.display_name}
         </div>
 
-        {!submitted ? (
+        {closed && !submitted ? (
+          <div className="rounded-[20px] bg-[rgba(255,255,255,.72)] px-[22px] py-[26px] shadow-[0_12px_30px_-18px_rgba(120,74,58,.4)] backdrop-blur-[4px]">
+            <p className="font-serif text-[19px] leading-[1.5] text-cocoa italic">
+              Las confirmaciones cerraron el {EVENT.rsvpDeadlineLabel}.
+            </p>
+            <p className="mt-2 text-[13px] leading-[1.6] text-sienna">
+              Si todavía nos quieres acompañar, escríbele directo a la mamá de{" "}
+              {EVENT.child} y con gusto lo vemos.
+            </p>
+            <a
+              href={waLink(
+                EVENT.hostPhone,
+                lateChangeMessage(invitation.display_name),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-block rounded-full bg-cocoa px-[26px] py-[13px] text-[12px] tracking-[.16em] text-white uppercase no-underline hover:text-white"
+            >
+              Escribir por WhatsApp
+            </a>
+          </div>
+        ) : !submitted ? (
           <div className="rounded-[20px] bg-[rgba(255,255,255,.72)] px-[22px] py-[26px] text-left shadow-[0_12px_30px_-18px_rgba(120,74,58,.4)] backdrop-blur-[4px]">
             <div className="mb-4 text-center text-[13px] text-sienna">
               Hemos apartado un lugar especial para{" "}
@@ -141,14 +212,14 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
             <div className="mb-5 flex gap-[10px]">
               <button
                 type="button"
-                onClick={() => setAttending(true)}
+                onClick={() => chooseAttending(true)}
                 className={attending === true ? PILL_ACTIVE : PILL_IDLE}
               >
                 Sí, ahí estaré
               </button>
               <button
                 type="button"
-                onClick={() => setAttending(false)}
+                onClick={() => chooseAttending(false)}
                 className={attending === false ? PILL_ACTIVE : PILL_IDLE}
               >
                 No podré ir
@@ -247,23 +318,40 @@ export default function Rsvp({ invitation }: { invitation: Invitation }) {
               </>
             )}
 
+            {/* Un cambio hay que avisarlo sí o sí: la organizadora ya tenía
+                esos lugares contados. Por eso aquí el botón se explica, en
+                vez de quedarse como un "avisar" opcional más. */}
+            {isChange && (
+              <div className="mt-4 rounded-[10px] bg-blush/60 px-4 py-[10px] text-[12px] leading-[1.6] text-sienna">
+                Ya guardamos tu cambio. Avísale también a la mamá de{" "}
+                {EVENT.child} para que ajuste sus cuentas.
+              </div>
+            )}
+
             <a
               href={whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 inline-block rounded-full bg-cocoa px-[26px] py-[13px] text-[12px] tracking-[.16em] text-white uppercase no-underline hover:text-white"
             >
-              Avisar por WhatsApp
+              {isChange ? "Avisar del cambio" : "Avisar por WhatsApp"}
             </a>
 
-            <div className="mt-[14px]">
-              <button
-                type="button"
-                onClick={() => setSubmitted(false)}
-                className="cursor-pointer border-none bg-transparent text-[12px] text-terracotta underline"
-              >
-                Modificar mi respuesta
-              </button>
+            <div className="mt-[14px] text-[12px] text-terracotta">
+              {closed ? (
+                <span className="text-stone">
+                  Las confirmaciones cerraron el {EVENT.rsvpDeadlineLabel}. Para
+                  cambiar algo, escríbele a la mamá de {EVENT.child}.
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="cursor-pointer border-none bg-transparent text-[12px] text-terracotta underline"
+                >
+                  Modificar mi respuesta
+                </button>
+              )}
             </div>
           </div>
         )}

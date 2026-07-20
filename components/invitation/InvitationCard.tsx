@@ -1,3 +1,4 @@
+import { rsvpIsClosed } from "@/lib/event";
 import type { Invitation } from "@/lib/types";
 import Countdown from "./Countdown";
 import Events from "./Events";
@@ -32,7 +33,9 @@ export default function InvitationCard({
         <Events />
 
         {invitation ? (
-          <Rsvp invitation={invitation} />
+          /* El plazo se evalúa con la hora del servidor, no la del celular
+             del invitado: un reloj mal puesto no debe abrir ni cerrar nada. */
+          <Rsvp invitation={invitation} closed={rsvpIsClosed(serverNow)} />
         ) : (
           <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6e4dc,#f2d3c8)] px-[30px] pt-[46px] pb-[50px] text-center">
             <div className="absolute -top-[30px] left-1/2 h-[120px] w-[200px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(255,255,255,.5),transparent_70%)]" />

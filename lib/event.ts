@@ -45,6 +45,15 @@ export const EVENT = {
   /** WhatsApp de la mamá que organiza — recibe los avisos de confirmación. */
   hostPhone: "523323399353",
 
+  /**
+   * Hasta cuándo puede el invitado confirmar o cambiar su respuesta él solo.
+   * Después la invitación se ve igual, pero el RSVP queda de solo lectura y se
+   * le pide que le escriba a la organizadora, que para entonces ya le dio el
+   * número final al salón.
+   */
+  rsvpDeadlineISO: "2026-09-05T23:59:59-06:00",
+  rsvpDeadlineLabel: "sábado 5 de septiembre",
+
   /** TODO: sustituir por los datos reales antes de enviar invitaciones. */
   bank: {
     bank: "____________",
@@ -54,3 +63,9 @@ export const EVENT = {
 } as const;
 
 export const EVENT_TARGET_MS = new Date(EVENT.dateISO).getTime();
+export const RSVP_DEADLINE_MS = new Date(EVENT.rsvpDeadlineISO).getTime();
+
+/** Si ya cerró el plazo para confirmar. Se evalúa en el servidor. */
+export function rsvpIsClosed(now: number = Date.now()) {
+  return now > RSVP_DEADLINE_MS;
+}
